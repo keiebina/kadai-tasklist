@@ -16,6 +16,11 @@ import javax.persistence.Table;
     @NamedQuery(
             name = "getAllTasks",
             query = "SELECT m FROM Task AS m ORDER BY m.id DESC"  //Taskからすべての要素を取得する
+            ),
+    @NamedQuery(
+            name = "getTaskCount",
+            query = "SELECT COUNT(m) From Task AS m"
+
             )
 })
 @Table(name = "tasks")

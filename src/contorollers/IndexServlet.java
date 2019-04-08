@@ -35,13 +35,30 @@ public class IndexServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         EntityManager em = DBUtil.createEntityManager();
 
-        List<Task> tasks = em.createNamedQuery("getAllTasks", Task.class).getResultList();
-                            //getAllTasksをcreateNamedQueryでデータベースへ問い合わせしgetResultListでリスト形式で取得
+        //開くページ数を取得
+        int page = 1;
+        try{
+            page = Integer.parseInt(request.getParameter("page"));
+        }catch(NumberFormatException e) {}
+
+        //最大件数と開始位置を指定してメッセージを取得
+        List<Task> tasks = em.createNamedQuery("getAllTasks", Task.class)
+                            .setFirstResult(15 * (page - 1))
+                            .setMaxResults(15) //データの最大取得件数
+                            .getResultList(); //getAllTasksをcreateNamedQueryでデータベースへ問い合わせしgetResultListでリスト形式で取得
+
+        //全件数を取得
+        long task_count = (long)em.createNamedQuery("getTaskCount", Long.class)
+                                .getSingleResult();
+
         response.getWriter().append(Integer.valueOf(tasks.size()).toString());
 
         em.close();
 
-        request.setAttribute("tasks", tasks); //リクエストスコープに取得したtasksを保存
+        //リクエストスコープに保存
+        request.setAttribute("tasks", tasks); //データベースから取得したtasks
+        request.setAttribute("task_count", task_count); //全件数
+        request.setAttribute("page", page); //ページ数
 
         //フラッシュメッセージがセッションスコープにセットされていたら
         //リクエストスコープに保存する(セッションスコープからは削除)
